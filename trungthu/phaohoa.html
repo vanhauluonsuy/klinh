@@ -108,7 +108,7 @@
 </head>
 <body>
   <div class="stage">
-    <img src="/img/anh1.png" alt="moon" class="moon">
+    <img src="../img/anh1.png" alt="moon" class="moon">
     <div class="countdown" id="countdown">180</div>
     <canvas id="fw-canvas"></canvas>
     <button class="start-btn" id="startBtn">Bắt Đầu</button>
@@ -122,8 +122,8 @@
   <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.10.6/dist/index.umd.js"></script>
   <script>
 const LANTERN_SOURCES = [
-  '/img/tho1.png','/img/tho2.png','/img/tho3.png',
-  '/img/anh4.png','/img/anh2.png','/img/anh3.png'
+  '../img/tho1.png','../img/tho2.png','../img/tho3.png',
+  '../img/anh4.png','../img/anh2.png','../img/anh3.png'
 ];
 const FLOAT_TEXTS = ["Trung Thu Vui Nè", "Iu Klinh", "Klinh Trung Thu Vui Vẻ"];
 const LANTERNS_DURATION_MS = 18000;
@@ -288,7 +288,7 @@ startBtn.addEventListener('click',()=>{
   boomSound.play().then(()=>{boomSound.pause();boomSound.currentTime=0}).catch(()=>{});
   startSequence();
 });
-backBtn.addEventListener('click',()=>window.location.href='/index.html');
+backBtn.addEventListener('click',()=>window.location.href='../index.html');
 window.addEventListener('beforeunload',()=>{clearInterval(lanternIntervalId);clearTimeout(lanternTimeoutId);clearTimeout(fireworksStopTimeout);});
   </script>
 </body>

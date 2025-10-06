@@ -13,7 +13,7 @@
     overflow: hidden;
     font-family: 'Arial', sans-serif;
     touch-action: manipulation;
-    background: url('/img/bgtrungthu.png') no-repeat center center fixed;
+    background: url('../img/bgtrungthu.png') no-repeat center center fixed;
     background-size: cover;
   }
 
@@ -147,11 +147,11 @@
 
 <div class="rain-container" id="rain"></div>
 
-<img src="/img/bg2.png" alt="icon-right" class="fixed-icon right">
-<img src="/img/bg1.png" alt="icon-left" class="fixed-icon left">
+<img src="../img/bg2.png" alt="icon-right" class="fixed-icon right">
+<img src="../img/bg1.png" alt="icon-left" class="fixed-icon left">
 
 <audio id="bg-music" loop>
-  <source src="/img/videoplayback-_2_.mp3" type="audio/mpeg">
+  <source src="../img/videoplayback-_2_.mp3" type="audio/mpeg">
   Trình duyệt không hỗ trợ audio.
 </audio>
 
@@ -193,7 +193,7 @@
   }
 
   function createFallingEmoji() {
-    const emojiImages = ['/icon/a1.png','/icon/a2.png','/icon/a3.png','/icon/a4.png','/icon/a5.png','/icon/a6.png','/icon/a7.png','/icon/a8.png','/icon/a9.png','/icon/a10.png','/icon/a11.png'];
+    const emojiImages = ['../icon/a1.png','../icon/a2.png','../icon/a3.png','../icon/a4.png','../icon/a5.png','../icon/a6.png','../icon/a7.png','../icon/a8.png','../icon/a9.png','../icon/a10.png','../icon/a11.png'];
     const img = document.createElement('img');
     img.src = getRandomItem(emojiImages);
     img.classList.add('emoji-image');
@@ -209,7 +209,7 @@
 
   // Icon lớn bay + glow + click hiện chữ
   function createBigIcon() {
-    const bigIcons = ['/icon/embe1.png','/icon/embe2.jpg','/icon/embed3.png','/icon/embe4.jpg'];
+    const bigIcons = ['../icon/embe1.png','../icon/embe2.jpg','../icon/embed3.png','../icon/embe4.jpg'];
     const img = document.createElement('img');
     img.src = getRandomItem(bigIcons);
     img.classList.add('big-icon');
