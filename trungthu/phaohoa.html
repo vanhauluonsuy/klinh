@@ -29,13 +29,6 @@
       transition:all .2s;
     }
     .start-btn:hover{background:rgba(255,255,255,0.14)}
-    .back{
-      position:absolute;right:18px;bottom:18px;z-index:40;
-      padding:10px 14px;border-radius:8px;
-      background:rgba(255,255,255,0.06);
-      cursor:pointer;font-size:0.95rem;
-    }
-    .back:hover{background:rgba(255,255,255,0.14)}
     .countdown{
       position:absolute;z-index:30;left:50%;top:48%;
       transform:translate(-50%,-50%);
@@ -112,7 +105,6 @@
     <div class="countdown" id="countdown">180</div>
     <canvas id="fw-canvas"></canvas>
     <button class="start-btn" id="startBtn">Bắt Đầu</button>
-    <button class="back" id="backBtn">⬅ Quay lại</button>
   </div>
 
   <!-- Âm thanh -->
@@ -135,7 +127,6 @@ const FLOAT_TEXT_INTERVAL_MS = 900;
 const TEXT_MESSAGES = ["Trung Thu", "Vui Vẻ", "Chúc Mừng", "Iu Klinh", "Klinh Trung Thu Vui Vẻ"];
 
 const startBtn = document.getElementById('startBtn');
-const backBtn = document.getElementById('backBtn');
 const countdownEl = document.getElementById('countdown');
 const fwCanvas = document.getElementById('fw-canvas');
 const bgMusic = document.getElementById('bgMusic');
@@ -197,6 +188,10 @@ function startFinalCountdown(){
     if(sec<=0){
       clearInterval(finalCountdownTimerId);
       countdownEl.style.display='none';
+      // Bắt đầu nhạc boomSound sau khi countdown kết thúc
+      boomSound.volume=0.9;
+      boomSound.loop=true;
+      boomSound.play().catch(()=>{});
       startFireworksPhase();
     }
     sec--;
@@ -207,9 +202,6 @@ function startFireworksPhase(){
   document.querySelectorAll('.lantern,.floating-text').forEach(e=>e.remove());
   bgMusic.pause();bgMusic.currentTime=0;
   fwCanvas.style.display='block';
-  boomSound.volume=0.9;
-  boomSound.loop=true;
-  boomSound.play().catch(()=>{});
 
   const ctx = fwCanvas.getContext('2d');
   fireworksInstance = new Fireworks.default(fwCanvas, {
@@ -230,9 +222,7 @@ function startFireworksPhase(){
   });
   fireworksInstance.start();
 
-  const textTimer = setInterval(()=>{
-    if(Math.random()<0.45) showTextFireworkExplode(ctx);
-  },3000);
+  const textTimer = setInterval(()=>{if(Math.random()<0.45) showTextFireworkExplode(ctx);},3000);
 
   fireworksStopTimeout=setTimeout(()=>{
     clearInterval(textTimer);
@@ -283,12 +273,7 @@ function showFinalMessage(){
   setTimeout(()=>msg.remove(),8000);
 }
 
-startBtn.addEventListener('click',()=>{
-  bgMusic.play().catch(()=>{});
-  boomSound.play().then(()=>{boomSound.pause();boomSound.currentTime=0}).catch(()=>{});
-  startSequence();
-});
-backBtn.addEventListener('click',()=>window.location.href='../index.html');
+startBtn.addEventListener('click',()=>{startSequence();});
 window.addEventListener('beforeunload',()=>{clearInterval(lanternIntervalId);clearTimeout(lanternTimeoutId);clearTimeout(fireworksStopTimeout);});
   </script>
 </body>
