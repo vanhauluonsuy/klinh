@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pháo Hoa Trung Thu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#000007;
+      --bg2:#07011a;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      height:100%;width:100%;
+      font-family:"Russo One","Segoe UI",sans-serif;
+      background:radial-gradient(circle at bottom,var(--bg2),var(--bg1) 80%);
+      color:#fff;overflow:hidden
+    }
+    .stage{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+    .start-btn{
+      position:absolute;z-index:40;
+      padding:14px 28px;border-radius:10px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.08);
+      cursor:pointer;font-size:1.25rem;
+      color:#fff;text-transform:uppercase;
+      transition:all .2s;
+    }
+    .start-btn:hover{background:rgba(255,255,255,0.14)}
+    .back{
+      position:absolute;right:18px;bottom:18px;z-index:40;
+      padding:10px 14px;border-radius:8px;
+      background:rgba(255,255,255,0.06);
+      cursor:pointer;font-size:0.95rem;
+    }
+    .back:hover{background:rgba(255,255,255,0.14)}
+    .countdown{
+      position:absolute;z-index:30;left:50%;top:48%;
+      transform:translate(-50%,-50%);
+      font-size:4.2rem;color:#ffe97f;
+      text-shadow:0 0 20px #ffcc33,0 0 40px #ff6600;
+      display:none;
+    }
+
+    /* 🌕 Mặt trăng */
+    .moon {
+      position:absolute;
+      top:40px;
+      right:60px;
+      width:220px;
+      max-width:28vw;
+      opacity:0.9;
+      z-index:5;
+      animation:glow 6s ease-in-out infinite alternate;
+      filter:drop-shadow(0 0 25px #fffbce) drop-shadow(0 0 60px #ffe799);
+      pointer-events:none;
+    }
+    @keyframes glow {
+      from {filter:drop-shadow(0 0 25px #fff5b0) drop-shadow(0 0 60px #ffe799);}
+      to   {filter:drop-shadow(0 0 40px #fff5b0) drop-shadow(0 0 100px #ffe799);}
+    }
+
+    /* 🏮 Đèn lồng bay từ dưới lên + phát sáng */
+    .lantern{
+      position:absolute;
+      bottom:-120px;
+      pointer-events:none;
+      z-index:10;
+      animation:rise linear forwards;
+      will-change:transform,opacity,filter;
+      filter:drop-shadow(0 0 10px rgba(255,255,255,0.5));
+    }
+    @keyframes rise {
+      from{transform:translateY(0) scale(1);opacity:0.9;}
+      60%{opacity:1;}
+      to{transform:translateY(-110vh) scale(1.1);opacity:0;}
+    }
+
+    /* 🌸 Chữ bay lên */
+    .floating-text {
+      position:absolute;
+      bottom:-50px;
+      font-size:2.2rem;
+      font-weight:900;
+      color:#fff6b5;
+      text-shadow:0 0 10px #ffd580,0 0 20px #ffaa33;
+      animation:floatText linear forwards;
+      opacity:0.9;
+      z-index:8;
+      pointer-events:none;
+    }
+    @keyframes floatText {
+      from {transform:translateY(0) scale(1);opacity:0.9;}
+      70% {opacity:1;}
+      to {transform:translateY(-110vh) scale(1.1);opacity:0;}
+    }
+
+    #fw-canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:20}
+    @media(max-width:640px){
+      .countdown{font-size:2.2rem}
+      .start-btn{font-size:1rem;padding:10px 18px}
+      .moon{width:140px;right:30px;top:30px;}
+      .floating-text{font-size:1.3rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <img src="/img/anh1.png" alt="moon" class="moon">
+    <div class="countdown" id="countdown">180</div>
+    <canvas id="fw-canvas"></canvas>
+    <button class="start-btn" id="startBtn">Bắt Đầu</button>
+    <button class="back" id="backBtn">⬅ Quay lại</button>
+  </div>
+
+  <!-- Âm thanh -->
+  <audio id="bgMusic" preload="auto" src="https://cdn.pixabay.com/download/audio/2021/11/04/audio_0b6d9f4c10.mp3?filename=chill-moonlight-120294.mp3"></audio>
+  <audio id="boomSound" preload="auto" src="../img/videoplayback.mp3"></audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.10.6/dist/index.umd.js"></script>
+  <script>
+const LANTERN_SOURCES = [
+  '/img/tho1.png','/img/tho2.png','/img/tho3.png',
+  '/img/anh4.png','/img/anh2.png','/img/anh3.png'
+];
+const FLOAT_TEXTS = ["Trung Thu Vui Nè", "Iu Klinh", "Klinh Trung Thu Vui Vẻ"];
+const LANTERNS_DURATION_MS = 18000;
+const FINAL_COUNTDOWN_SECONDS = 5;
+const FIREWORKS_DURATION_MS = 300000;
+const LANTERN_SPAWN_INTERVAL_MS = 300;
+const FLOAT_TEXT_INTERVAL_MS = 900;
+
+const TEXT_MESSAGES = ["Trung Thu", "Vui Vẻ", "Chúc Mừng", "Iu Klinh", "Klinh Trung Thu Vui Vẻ"];
+
+const startBtn = document.getElementById('startBtn');
+const backBtn = document.getElementById('backBtn');
+const countdownEl = document.getElementById('countdown');
+const fwCanvas = document.getElementById('fw-canvas');
+const bgMusic = document.getElementById('bgMusic');
+const boomSound = document.getElementById('boomSound');
+
+let lanternIntervalId, textIntervalId, lanternTimeoutId, finalCountdownTimerId, fireworksInstance, fireworksStopTimeout;
+
+function rand(min,max){return Math.random()*(max-min)+min;}
+
+function spawnLantern(){
+  const img=document.createElement('img');
+  const src=LANTERN_SOURCES[Math.floor(Math.random()*LANTERN_SOURCES.length)];
+  img.src=src;
+  img.className='lantern';
+  const size=Math.floor(rand(40,100));
+  img.style.width=size+'px';
+  img.style.left=(rand(3,97))+'vw';
+  const dur=rand(6,12);
+  img.style.animationDuration=dur+'s';
+  document.body.appendChild(img);
+  setTimeout(()=>img.remove(),(dur*1000)+1200);
+}
+
+function spawnFloatingText(){
+  const t=document.createElement('div');
+  t.className='floating-text';
+  t.textContent=FLOAT_TEXTS[Math.floor(Math.random()*FLOAT_TEXTS.length)];
+  const left=rand(10,90);
+  const dur=rand(5,9);
+  t.style.left=left+'vw';
+  t.style.animationDuration=dur+'s';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),dur*1000+800);
+}
+
+function startSequence(){
+  startBtn.style.display='none';
+  bgMusic.volume=0.45;
+  bgMusic.loop=true;
+  bgMusic.play().catch(()=>{});
+  lanternIntervalId=setInterval(spawnLantern,LANTERN_SPAWN_INTERVAL_MS);
+  textIntervalId=setInterval(spawnFloatingText,FLOAT_TEXT_INTERVAL_MS);
+  spawnLantern();spawnFloatingText();
+  lanternTimeoutId=setTimeout(()=>{
+    clearInterval(lanternIntervalId);
+    clearInterval(textIntervalId);
+    startFinalCountdown();
+  },LANTERNS_DURATION_MS);
+}
+
+function startFinalCountdown(){
+  bgMusic.volume=0.2;
+  let sec=FINAL_COUNTDOWN_SECONDS;
+  countdownEl.style.display='block';
+  countdownEl.textContent=sec;
+  sec--;
+  finalCountdownTimerId=setInterval(()=>{
+    countdownEl.textContent=sec;
+    if(sec<=0){
+      clearInterval(finalCountdownTimerId);
+      countdownEl.style.display='none';
+      startFireworksPhase();
+    }
+    sec--;
+  },1000);
+}
+
+function startFireworksPhase(){
+  document.querySelectorAll('.lantern,.floating-text').forEach(e=>e.remove());
+  bgMusic.pause();bgMusic.currentTime=0;
+  fwCanvas.style.display='block';
+  boomSound.volume=0.9;
+  boomSound.loop=true;
+  boomSound.play().catch(()=>{});
+
+  const ctx = fwCanvas.getContext('2d');
+  fireworksInstance = new Fireworks.default(fwCanvas, {
+    autoresize:true,
+    opacity:0.9,
+    acceleration:1.05,
+    friction:0.97,
+    gravity:1.5,
+    particles:320,
+    traceLength:7,
+    traceSpeed:10,
+    explosion:8,
+    intensity:28,
+    flickering:80,
+    hue:{min:0,max:360},
+    delay:{min:10,max:60},
+    rocketsPoint:{min:10,max:90}
+  });
+  fireworksInstance.start();
+
+  const textTimer = setInterval(()=>{
+    if(Math.random()<0.45) showTextFireworkExplode(ctx);
+  },3000);
+
+  fireworksStopTimeout=setTimeout(()=>{
+    clearInterval(textTimer);
+    stopFireworksPhase();
+  },FIREWORKS_DURATION_MS);
+}
+
+function showTextFireworkExplode(ctx){
+  const text = TEXT_MESSAGES[Math.floor(Math.random()*TEXT_MESSAGES.length)];
+  const x = rand(innerWidth*0.25, innerWidth*0.75);
+  const y = rand(innerHeight*0.25, innerHeight*0.65);
+  const hue = rand(0,360);
+  const fontSize = rand(70,100);
+  ctx.save();
+  ctx.font = `900 ${fontSize}px Russo One`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = `hsl(${hue},100%,70%)`;
+  ctx.shadowBlur = 50;
+  ctx.fillStyle = `hsl(${hue},100%,70%)`;
+  ctx.strokeStyle = `hsl(${hue},100%,90%)`;
+  ctx.lineWidth = 2.5;
+  ctx.globalAlpha = 1;
+  ctx.fillText(text, x, y);
+  ctx.strokeText(text, x, y);
+  ctx.restore();
+}
+
+function stopFireworksPhase(){
+  try{if(fireworksInstance)fireworksInstance.stop();}catch(e){}
+  boomSound.pause();boomSound.currentTime=0;
+  fwCanvas.style.display='none';
+  showFinalMessage();
+}
+
+function showFinalMessage(){
+  const msg=document.createElement('div');
+  msg.style.position='absolute';
+  msg.style.zIndex=50;
+  msg.style.left='50%';
+  msg.style.top='52%';
+  msg.style.transform='translate(-50%,-50%)';
+  msg.style.fontSize='1.6rem';
+  msg.style.color='#fff';
+  msg.style.textShadow='0 0 20px #ffcc33';
+  msg.textContent='Chúc Mừng Trung Thu!';
+  document.body.appendChild(msg);
+  setTimeout(()=>msg.remove(),8000);
+}
+
+startBtn.addEventListener('click',()=>{
+  bgMusic.play().catch(()=>{});
+  boomSound.play().then(()=>{boomSound.pause();boomSound.currentTime=0}).catch(()=>{});
+  startSequence();
+});
+backBtn.addEventListener('click',()=>window.location.href='/index.html');
+window.addEventListener('beforeunload',()=>{clearInterval(lanternIntervalId);clearTimeout(lanternTimeoutId);clearTimeout(fireworksStopTimeout);});
+  </script>
+</body>
+</html>

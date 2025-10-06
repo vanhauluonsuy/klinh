@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Icon tương tác — Chúc mừng Trung Thu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-url: url('/img/banhtrungthu.png'); /* Thay URL background tại đây */
+      --card:#0f1724;
+      --accent:#ffb86b;
+      --glass: rgba(255,255,255,0.04);
+      --text:#e6eef8;
+      --muted: #c0cbd6;
+    }
+
+    *{box-sizing:border-box;}
+    html,body{height:100%; margin:0;}
+    body{
+      background: var(--bg-url) no-repeat center center / cover;
+      color:var(--text);
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:900px;
+      text-align:center;
+      background: rgba(0,0,0,0.35);
+      padding:20px 24px;
+      border-radius:16px;
+    }
+
+    h1{
+      margin:0 0 16px 0;
+      font-size:24px;
+      letter-spacing:0.4px;
+      font-weight:600;
+    }
+
+    p.lead{
+      margin:0 0 28px 0;
+      font-size:15px;
+      color:var(--muted);
+    }
+
+    .icons-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:28px;
+      justify-content:center;
+      align-items:flex-start;
+      padding:16px 0;
+    }
+
+    .icon-card{
+      width:120px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      position:relative;
+    }
+
+    .icon-btn{
+      width:100px;
+      height:100px;
+      border-radius:20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,0.04);
+      cursor:pointer;
+      transition: transform 200ms cubic-bezier(.2,.9,.2,1), box-shadow 200ms, filter 200ms;
+      user-select:none;
+      outline: none;
+      transform: translateY(0) scale(1);
+      box-shadow: 0 4px 12px rgba(2,6,23,0.5);
+      backdrop-filter: blur(6px);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .icon-btn img{
+      max-width:70%;
+      max-height:70%;
+      transition: transform 200ms, filter 200ms, box-shadow 200ms;
+    }
+
+    /* Hover & click glow effect */
+    .icon-btn:hover,
+    .icon-btn:focus,
+    .icon-btn.active {
+      transform: translateY(-8px) scale(1.08);
+      box-shadow: 0 16px 40px rgba(255,184,107,0.25), 0 6px 18px rgba(2,6,23,0.7);
+      filter: brightness(1.15) saturate(1.1);
+    }
+
+    .icon-btn.active img {
+      animation: glowPulse 1.2s infinite alternate;
+    }
+
+    @keyframes glowPulse {
+      0% { transform: scale(1.08); filter: brightness(1.15) saturate(1.1); }
+      100% { transform: scale(1.12); filter: brightness(1.25) saturate(1.15); }
+    }
+
+    .icon-btn::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:20px;
+      pointer-events:none;
+      transition: opacity 200ms;
+      opacity:0;
+      box-shadow: 0 0 30px rgba(255,184,107,0.25), inset 0 0 18px rgba(255,184,107,0.05);
+      mix-blend-mode:screen;
+    }
+    .icon-btn:hover::after,
+    .icon-btn:focus::after,
+    .icon-btn.active::after{
+      opacity:1;
+    }
+
+    .label{
+      margin-top:10px;
+      font-size:15px;
+      color:var(--muted);
+    }
+
+    /* Panel */
+    .panel{
+      width:260px;
+      max-width: calc(100vw - 32px);
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%) translateY(-10px);
+      top:106px;
+      background: rgba(0,0,0,0.85);
+      border:1px solid rgba(255,255,255,0.05);
+      border-radius:12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+      padding:14px 16px;
+      text-align:left;
+      color:var(--text);
+      overflow-y:auto;
+      max-height:220px;
+      opacity:0;
+      z-index:10;
+      transition: max-height 360ms cubic-bezier(.2,.9,.2,1), opacity 240ms ease, transform 240ms ease;
+    }
+
+    .panel.open{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
+    .panel .title{
+      font-weight:700;
+      margin:0 0 6px 0;
+      font-size:16px;
+    }
+    .panel .msg{
+      margin:0;
+      font-size:15px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .panel::before{
+      content:"";
+      position:absolute;
+      top:-8px;
+      left:50%;
+      transform:translateX(-50%) rotate(45deg);
+      width:14px;
+      height:14px;
+      background: rgba(0,0,0,0.85);
+      border-left:1px solid rgba(255,255,255,0.05);
+      border-top:1px solid rgba(255,255,255,0.05);
+      border-radius:2px;
+      box-shadow: -6px -6px 18px rgba(0,0,0,0.3);
+    }
+
+    .close-btn{
+      position:absolute;
+      top:8px;
+      right:8px;
+      background:transparent;
+      border:none;
+      color:var(--muted);
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    @media (max-width:540px){
+      .icon-card{width:100px;}
+      .icon-btn{width:80px;height:80px;border-radius:16px;}
+      .label{font-size:14px;}
+      .panel{width:90%; max-height:180px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" aria-live="polite">
+    <h1>CHÚC KLINH TRUNG THU VUI VẺ Ạ</h1>
+    <p class="lead">Bạn Klinh bấm vào mấy icon này để xem lời chúc siuuu siuu đặc biệt của mình nhó.</p>
+
+    <div class="icons-row" role="list">
+      <!-- Icon 1 -->
+      <div class="icon-card" role="listitem">
+        <button class="icon-btn" aria-expanded="false" data-id="p1" aria-controls="p1" title="Lồng đèn đỏ">
+          <img src="/img/qua2.png" alt="Lồng đèn" />
+        </button>
+        <div class="label">Lồng đèn Nè</div>
+
+        <div id="p1" class="panel" role="region" aria-hidden="true">
+          <button class="close-btn" aria-label="Đóng">&times;</button>
+          <div class="title">Lời chúc của anh</div>
+          <p class="msg">Trung thu vui vẻ nhaa chúc cậu tất cả trừ vất vả cười nhiều hơn và luonn vui vẻ nhớ giữ gìn sức khỏe nha khong có suy nghĩ tiêu cực nữa và thương bản thân mình nhieu hơn biết chưa nè anh yeeu bé nhiều lắm ❤️❤️.</p>
+        </div>
+      </div>
+
+      <!-- Icon 2 -->
+      <div class="icon-card" role="listitem">
+        <button class="icon-btn" aria-expanded="false" data-id="p2" aria-controls="p2" title="Mặt trăng">
+          <img src="/img/qua1.png" alt="Trăng" />
+        </button>
+        <div class="label">Ăn Bánh Hong</div>
+
+        <div id="p2" class="panel" role="region" aria-hidden="true">
+          <button class="close-btn" aria-label="Đóng">&times;</button>
+          <div class="title">Lời chúc của anh</div>
+          <p class="msg">Hôm nay là ngày lễ Tết Trung Thu, chuc cho tụi mình vẫn còn bên nhau như bây giờ. Dù có cãi vã, hiểu lầm, thì sau tất cả vẫn chọn quay về. Bởi vì gặp được nhau đã là điều may mắn nhất!!</p>
+        </div>
+      </div>
+
+      <!-- Icon 3 -->
+      <div class="icon-card" role="listitem">
+        <button class="icon-btn" aria-expanded="false" data-id="p3" aria-controls="p3" title="Bánh trung thu">
+          <img src="/img/qua3.png" alt="Bánh" />
+        </button>
+        <div class="label">Tặng Bé Thỏ</div>
+
+        <div id="p3" class="panel" role="region" aria-hidden="true">
+          <button class="close-btn" aria-label="Đóng">&times;</button>
+          <div class="title">Anh Yeu Em</div>
+          <p class="msg">Trung thu đến rồi...! Anh chúc em bé của anh có một ngày lễ Trung Thu thật vui vẻ và hạnh phúc. Luôn vui vẻ yeu đời tràn đầy sức sống và chúc cho những điều tốt đẹp sẽ đến với chúng ta.. Mong em vẫn luon là ánh trăng sáng chiếu soi cuộc sống của anh, cũng mong rằng chúng ta sẽ và luôn cố gắng để những mùa trung thu sau cũng sẽ luôn co nhau! Cũng thật xin lỗi em nhiều vì Trung Thu này anh chả có thứ gì hay món quà nào đặc biệt cho em cả. Cũng không ở cạnh em đón lễ cùng em được thiệt thòi cho em rồi...! Anh xin lỗi em bé của anh nhiều ... Anh sẽ mong rằng tụi mình có thể sớm gặp nhau! Lời cuối cùng anh muốn nói với em là ANH YÊU EM NHIEUU LẮM.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nhạc nền -->
+  <audio id="bgMusic" loop>
+    <source src="/img/videoplayback-_1_.mp3" type="audio/mpeg">
+    Trình duyệt của bạn không hỗ trợ thẻ audio.
+  </audio>
+
+  <script>
+    (function(){
+      const buttons = document.querySelectorAll('.icon-btn');
+      const panels = document.querySelectorAll('.panel');
+      const audio = document.getElementById("bgMusic");
+      let audioStarted = false;
+
+      function startAudio() {
+        if(!audioStarted){
+          audio.play().catch(()=>{}); // tránh lỗi autoplay
+          audioStarted = true;
+        }
+      }
+
+      function closeAll() {
+        panels.forEach(p => {
+          p.classList.remove('open');
+          p.setAttribute('aria-hidden','true');
+        });
+        buttons.forEach(b => b.classList.remove('active'));
+        buttons.forEach(b => b.setAttribute('aria-expanded','false'));
+      }
+
+      function openPanel(panelEl, btnEl) {
+        const isOpen = panelEl.classList.contains('open');
+        closeAll();
+        if(!isOpen){
+          panelEl.classList.add('open');
+          panelEl.setAttribute('aria-hidden','false');
+          btnEl.setAttribute('aria-expanded','true');
+          btnEl.classList.add('active');
+        }
+      }
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          startAudio();
+          const id = btn.getAttribute('data-id');
+          const panel = document.getElementById(id);
+          if (!panel) return;
+          openPanel(panel, btn);
+        });
+      });
+
+      document.querySelectorAll('.panel .close-btn').forEach(closeBtn => {
+        closeBtn.addEventListener('click', () => {
+          const panel = closeBtn.closest('.panel');
+          if (!panel) return;
+          panel.classList.remove('open');
+          panel.setAttribute('aria-hidden','true');
+          const id = panel.id;
+          const btn = document.querySelector(`.icon-btn[data-id="${id}"]`);
+          if (btn) btn.classList.remove('active');
+          if (btn) btn.setAttribute('aria-expanded','false');
+        });
+      });
+
+      document.addEventListener('click', (ev) => {
+        if(!ev.target.closest('.icon-card')){
+          closeAll();
+        }
+      });
+
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') closeAll();
+      });
+
+      window.addEventListener('resize', () => closeAll());
+    })();
+  </script>
+</body>
+</html>

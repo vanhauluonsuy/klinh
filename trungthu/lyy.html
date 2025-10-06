@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hiệu ứng chữ bay + nhạc + icon bay sáng</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Arial', sans-serif;
+    touch-action: manipulation;
+    background: url('/img/bgtrungthu.png') no-repeat center center fixed;
+    background-size: cover;
+  }
+
+  .rain-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .phrase, .emoji-image, .big-icon {
+    position: absolute;
+    bottom: -50px;
+    animation: rise linear forwards;
+  }
+
+  .phrase {
+    font-size: clamp(12px, 3vw, 36px);
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  .emoji-image {
+    width: clamp(20px, 4vw, 40px);
+    height: clamp(20px, 4vw, 40px);
+    pointer-events: none;
+  }
+
+  .big-icon {
+    width: clamp(60px, 8vw, 120px);
+    height: auto;
+    pointer-events: auto;
+    filter: drop-shadow(0 0 8px white); /* glow effect */
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+
+  .big-icon:hover {
+    transform: scale(1.1);
+  }
+
+  @keyframes rise {
+    to {
+      transform: translateY(-110vh);
+      opacity: 0;
+    }
+  }
+
+  .fixed-icon {
+    position: fixed;
+    bottom: 1%;
+    z-index: 999;
+    pointer-events: none;
+    animation: sway 3s ease-in-out infinite;
+  }
+
+  .fixed-icon.right {
+    right: 1%;
+    width: clamp(200px, 20vw, 660px);
+    height: auto;
+  }
+
+  .fixed-icon.left {
+    left: 1%;
+    width: clamp(100px, 15vw, 300px);
+    height: auto;
+  }
+
+  @keyframes sway {
+    0% { transform: rotate(0deg) translateY(0); }
+    25% { transform: rotate(2deg) translateY(-5px); }
+    50% { transform: rotate(0deg) translateY(0); }
+    75% { transform: rotate(-2deg) translateY(-5px); }
+    100% { transform: rotate(0deg) translateY(0); }
+  }
+
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: twinkle linear infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+
+  #play-btn {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.3);
+    z-index: 1000;
+    cursor: pointer;
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+  }
+
+  .love-text {
+    position: absolute;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff;
+    pointer-events: none;
+    opacity: 1;
+    animation: fadeOut 2s forwards;
+  }
+
+  @keyframes fadeOut {
+    0% { opacity: 1; transform: translateY(-10px);}
+    100% { opacity: 0; transform: translateY(-40px);}
+  }
+
+</style>
+</head>
+<body>
+
+<div class="rain-container" id="rain"></div>
+
+<img src="/img/bg2.png" alt="icon-right" class="fixed-icon right">
+<img src="/img/bg1.png" alt="icon-left" class="fixed-icon left">
+
+<audio id="bg-music" loop>
+  <source src="/img/videoplayback-_2_.mp3" type="audio/mpeg">
+  Trình duyệt không hỗ trợ audio.
+</audio>
+
+<script>
+  const container = document.getElementById('rain');
+
+  const phrases = [
+    'Chúc em luôn xinh đẹp💖', 'Yêu em vcl 💋', 'Iu Linh 💗', 'Iu Bbi 💞', 'Mãi Mãi Iu Em',
+    'Toi Iu Em', 'Iu Khanh Linh', 'Trung Thu Vui Vẻ Nhé', 'Trung Thu Vui Vẻ',
+    'Chúc em Trung Thu vui vẻ', 'Tôi mãi yêu em 💖', '💌 Anh nhớ em', '🌹 Em là duy nhất', 'Chỉ Yêu Mình Em',
+    'Iu Công Chúa', 'Em Là Đẹp Nhất', '😘 Hôn em nè', '🎵 Bên em mãi mãi', '❤️', '💘', '💝', '💕', '💗', '💓', '💞'
+  ];
+
+  const colors = [
+    '#ff4d4d', '#ff66cc', '#ffcc00', '#00ffff', '#00ff00', '#ff6600', '#6699ff', '#cc33ff',
+    '#ff1493', '#ffa500', '#00fa9a', '#7b68ee', '#f08080', '#ffd700', '#1e90ff', '#adff2f',
+    '#ff69b4', '#ff7f50', '#da70d6', '#40e0d0', '#ff6347', '#8a2be2', '#00ced1', '#e9967a',
+    '#ffb6c1', '#ffdab9', '#98fb98', '#ba55d3', '#87cefa', '#ff00ff', '#dc143c', '#66cdaa',
+    '#f5deb3', '#ffdead', '#e0ffff'
+  ];
+
+  function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function createFallingPhrase() {
+    const el = document.createElement('div');
+    el.classList.add('phrase');
+    el.innerText = getRandomItem(phrases);
+    const vw = window.innerWidth;
+    const spacing = 60;
+    const columns = Math.floor(vw / spacing);
+    const column = Math.floor(Math.random() * columns);
+    el.style.left = `${column * spacing}px`;
+    const color = getRandomItem(colors);
+    el.style.color = color;
+    el.style.animationDuration = `${2 + Math.random() * 3}s`;
+    el.style.textShadow = `0 0 5px ${color}, 0 0 10px ${color}, 0 0 20px ${color}, 0 0 40px ${color}`;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 6000);
+  }
+
+  function createFallingEmoji() {
+    const emojiImages = ['/icon/a1.png','/icon/a2.png','/icon/a3.png','/icon/a4.png','/icon/a5.png','/icon/a6.png','/icon/a7.png','/icon/a8.png','/icon/a9.png','/icon/a10.png','/icon/a11.png'];
+    const img = document.createElement('img');
+    img.src = getRandomItem(emojiImages);
+    img.classList.add('emoji-image');
+    const vw = window.innerWidth;
+    const spacing = 50;
+    const columns = Math.floor(vw / spacing);
+    const column = Math.floor(Math.random() * columns);
+    img.style.left = `${column * spacing}px`;
+    img.style.animationDuration = `${3 + Math.random() * 3}s`;
+    container.appendChild(img);
+    setTimeout(() => img.remove(), 7000);
+  }
+
+  // Icon lớn bay + glow + click hiện chữ
+  function createBigIcon() {
+    const bigIcons = ['/icon/embe1.png','/icon/embe2.jpg','/icon/embed3.png','/icon/embe4.jpg'];
+    const img = document.createElement('img');
+    img.src = getRandomItem(bigIcons);
+    img.classList.add('big-icon');
+    const vw = window.innerWidth;
+    const spacing = 100;
+    const columns = Math.floor(vw / spacing);
+    const column = Math.floor(Math.random() * columns);
+    img.style.left = `${column * spacing}px`;
+    img.style.animationDuration = `${4 + Math.random() * 4}s`;
+    container.appendChild(img);
+
+    // Bấm vào icon hiển thị chữ
+    img.addEventListener('click', (e) => {
+      const text = document.createElement('div');
+      text.classList.add('love-text');
+      text.innerText = "Anh yêu em";
+      text.style.left = e.clientX + 'px';
+      text.style.top = e.clientY + 'px';
+      container.appendChild(text);
+      setTimeout(() => text.remove(), 2000);
+    });
+
+    setTimeout(() => img.remove(), 8000);
+  }
+
+  const numStars = 80;
+  for (let i = 0; i < numStars; i++) {
+    const star = document.createElement('div');
+    star.classList.add('star');
+    star.style.left = Math.random() * window.innerWidth + 'px';
+    star.style.top = Math.random() * window.innerHeight + 'px';
+    star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+    star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    document.body.appendChild(star);
+  }
+
+  let count = 0;
+  setInterval(() => {
+    createFallingPhrase();
+    if (count % 4 === 0) createFallingEmoji();
+    if (count % 8 === 0) createBigIcon();
+    count++;
+  }, 200);
+
+  // Xử lý nhạc
+  const audio = document.getElementById('bg-music');
+  const playBtn = document.getElementById('play-btn');
+
+  window.addEventListener('load', () => {
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => { playBtn.style.display = 'flex'; });
+    }
+  });
+
+  playBtn.addEventListener('click', () => {
+    audio.play();
+    playBtn.style.display = 'none';
+  });
+
+</script>
+
+</body>
+</html>
